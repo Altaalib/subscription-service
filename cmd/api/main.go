@@ -1,3 +1,9 @@
+// @title Subscription Service API
+// @version 1.0
+// @description REST API для управления подписками
+// @host localhost:8080
+// @BasePath /api/v1
+
 package main
 
 import (
@@ -13,6 +19,10 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+
+	_ "subscription-service/docs"
+
+	echoSwagger "github.com/swaggo/echo-swagger"
 
 	"github.com/go-playground/validator/v10"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -97,6 +107,9 @@ func main() {
 	api.PUT("/subscriptions/:id", h.Update)
 	api.DELETE("/subscriptions/:id", h.Delete)
 	api.GET("/subscriptions/total", h.GetTotalCost)
+
+	// Swagger
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	// Запуск
 	go func() {
