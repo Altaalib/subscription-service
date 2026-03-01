@@ -10,6 +10,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+
 	"github.com/go-playground/validator/v10"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
@@ -53,6 +57,26 @@ func main() {
 	}
 	defer db.Close()
 	zapLogger.Info("connected to database")
+
+	// Миграции
+	m, err := migrate.New(
+		"file://migrations",
+		fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
+			cfg.Database.User,
+			cfg.Database.Password,
+			cfg.Database.Host,
+			cfg.Database.Port,
+			cfg.Database.DBName,
+			cfg.Database.SSLMode,
+		),
+	)
+	if err != nil {
+		zapLogger.Fatal("failed to init migrations", zap.Error(err))
+	}
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		zapLogger.Fatal("failed to run migrations", zap.Error(err))
+	}
+	zapLogger.Info("migrations applied")
 
 	// Слои
 	repo := repository.NewSubscriptionRepository(db)
