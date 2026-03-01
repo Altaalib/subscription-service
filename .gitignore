@@ -1,0 +1,29 @@
+# Env
+.env
+
+# Binary
+*.exe
+*.exe~
+/bin/
+/tmp/
+
+# Go
+vendor/
+
+# IDE
+.idea/
+.vscode/
+
+# Swagger
+docs/docs.go
+docs/swagger.json
+docs/swagger.yaml
+
+# Default ignored files
+/shelf/
+/workspace.xml
+# Editor-based HTTP Client requests
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
