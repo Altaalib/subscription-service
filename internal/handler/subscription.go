@@ -1,20 +1,28 @@
 package handler
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 
 	"subscription-service/internal/model"
-	"subscription-service/internal/service"
 )
 
+type SubscriptionService interface {
+	Create(ctx context.Context, input model.CreateSubscriptionInput) (*model.Subscription, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*model.Subscription, error)
+	GetAll(ctx context.Context) ([]*model.Subscription, error)
+	Update(ctx context.Context, id uuid.UUID, input model.UpdateSubscriptionInput) (*model.Subscription, error)
+	Delete(ctx context.Context, id uuid.UUID) error
+	GetTotalCost(ctx context.Context, userID uuid.UUID, serviceName string) (*model.TotalCostResponse, error)
+}
 type SubscriptionHandler struct {
-	service service.SubscriptionService
+	service SubscriptionService
 }
 
-func NewSubscriptionHandler(service service.SubscriptionService) *SubscriptionHandler {
+func New(service SubscriptionService) *SubscriptionHandler {
 	return &SubscriptionHandler{service: service}
 }
 

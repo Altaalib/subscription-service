@@ -10,24 +10,17 @@ import (
 	"subscription-service/internal/model"
 )
 
-type SubscriptionRepository interface {
-	Create(ctx context.Context, input model.CreateSubscriptionInput) (*model.Subscription, error)
-	GetByID(ctx context.Context, id uuid.UUID) (*model.Subscription, error)
-	GetAll(ctx context.Context) ([]*model.Subscription, error)
-	Update(ctx context.Context, id uuid.UUID, input model.UpdateSubscriptionInput) (*model.Subscription, error)
-	Delete(ctx context.Context, id uuid.UUID) error
-	GetTotalCost(ctx context.Context, userID uuid.UUID, serviceName string) (*model.TotalCostResponse, error)
-}
-
-type subscriptionRepo struct {
+type SubscriptionRepo struct {
 	db *sqlx.DB
 }
 
-func NewSubscriptionRepository(db *sqlx.DB) SubscriptionRepository {
-	return &subscriptionRepo{db: db}
+func New(db *sqlx.DB) *SubscriptionRepo {
+	return &SubscriptionRepo{
+		db: db,
+	}
 }
 
-func (r *subscriptionRepo) Create(ctx context.Context, input model.CreateSubscriptionInput) (*model.Subscription, error) {
+func (r *SubscriptionRepo) Create(ctx context.Context, input model.CreateSubscriptionInput) (*model.Subscription, error) {
 	sub := &model.Subscription{}
 	query := `
 		INSERT INTO subscriptions (service_name, price, user_id, start_date, end_date)
@@ -47,7 +40,7 @@ func (r *subscriptionRepo) Create(ctx context.Context, input model.CreateSubscri
 	return sub, nil
 }
 
-func (r *subscriptionRepo) GetByID(ctx context.Context, id uuid.UUID) (*model.Subscription, error) {
+func (r *SubscriptionRepo) GetByID(ctx context.Context, id uuid.UUID) (*model.Subscription, error) {
 	sub := &model.Subscription{}
 	query := `SELECT * FROM subscriptions WHERE id = $1`
 
@@ -58,7 +51,7 @@ func (r *subscriptionRepo) GetByID(ctx context.Context, id uuid.UUID) (*model.Su
 	return sub, nil
 }
 
-func (r *subscriptionRepo) GetAll(ctx context.Context) ([]*model.Subscription, error) {
+func (r *SubscriptionRepo) GetAll(ctx context.Context) ([]*model.Subscription, error) {
 	var subs []*model.Subscription
 	query := `SELECT * FROM subscriptions ORDER BY created_at DESC`
 
@@ -69,7 +62,7 @@ func (r *subscriptionRepo) GetAll(ctx context.Context) ([]*model.Subscription, e
 	return subs, nil
 }
 
-func (r *subscriptionRepo) Update(ctx context.Context, id uuid.UUID, input model.UpdateSubscriptionInput) (*model.Subscription, error) {
+func (r *SubscriptionRepo) Update(ctx context.Context, id uuid.UUID, input model.UpdateSubscriptionInput) (*model.Subscription, error) {
 	sub := &model.Subscription{}
 	query := `
 		UPDATE subscriptions
@@ -95,7 +88,7 @@ func (r *subscriptionRepo) Update(ctx context.Context, id uuid.UUID, input model
 	return sub, nil
 }
 
-func (r *subscriptionRepo) Delete(ctx context.Context, id uuid.UUID) error {
+func (r *SubscriptionRepo) Delete(ctx context.Context, id uuid.UUID) error {
 	query := `DELETE FROM subscriptions WHERE id = $1`
 
 	_, err := r.db.ExecContext(ctx, query, id)
@@ -105,7 +98,7 @@ func (r *subscriptionRepo) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (r *subscriptionRepo) GetTotalCost(ctx context.Context, userID uuid.UUID, serviceName string) (*model.TotalCostResponse, error) {
+func (r *SubscriptionRepo) GetTotalCost(ctx context.Context, userID uuid.UUID, serviceName string) (*model.TotalCostResponse, error) {
 	result := &model.TotalCostResponse{}
 	query := `
 		SELECT COALESCE(SUM(price), 0) as total_cost

@@ -7,10 +7,9 @@ import (
 	"github.com/google/uuid"
 
 	"subscription-service/internal/model"
-	"subscription-service/internal/repository"
 )
 
-type SubscriptionService interface {
+type SubscriptionRepository interface {
 	Create(ctx context.Context, input model.CreateSubscriptionInput) (*model.Subscription, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*model.Subscription, error)
 	GetAll(ctx context.Context) ([]*model.Subscription, error)
@@ -19,15 +18,15 @@ type SubscriptionService interface {
 	GetTotalCost(ctx context.Context, userID uuid.UUID, serviceName string) (*model.TotalCostResponse, error)
 }
 
-type subscriptionService struct {
-	repo repository.SubscriptionRepository
+type SubscriptionService struct {
+	repo SubscriptionRepository
 }
 
-func NewSubscriptionService(repo repository.SubscriptionRepository) SubscriptionService {
-	return &subscriptionService{repo: repo}
+func New(repo SubscriptionRepository) *SubscriptionService {
+	return &SubscriptionService{repo: repo}
 }
 
-func (s *subscriptionService) Create(ctx context.Context, input model.CreateSubscriptionInput) (*model.Subscription, error) {
+func (s *SubscriptionService) Create(ctx context.Context, input model.CreateSubscriptionInput) (*model.Subscription, error) {
 	sub, err := s.repo.Create(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("service.Create: %w", err)
@@ -35,7 +34,7 @@ func (s *subscriptionService) Create(ctx context.Context, input model.CreateSubs
 	return sub, nil
 }
 
-func (s *subscriptionService) GetByID(ctx context.Context, id uuid.UUID) (*model.Subscription, error) {
+func (s *SubscriptionService) GetByID(ctx context.Context, id uuid.UUID) (*model.Subscription, error) {
 	sub, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("service.GetByID: %w", err)
@@ -43,7 +42,7 @@ func (s *subscriptionService) GetByID(ctx context.Context, id uuid.UUID) (*model
 	return sub, nil
 }
 
-func (s *subscriptionService) GetAll(ctx context.Context) ([]*model.Subscription, error) {
+func (s *SubscriptionService) GetAll(ctx context.Context) ([]*model.Subscription, error) {
 	subs, err := s.repo.GetAll(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("service.GetAll: %w", err)
@@ -51,7 +50,7 @@ func (s *subscriptionService) GetAll(ctx context.Context) ([]*model.Subscription
 	return subs, nil
 }
 
-func (s *subscriptionService) Update(ctx context.Context, id uuid.UUID, input model.UpdateSubscriptionInput) (*model.Subscription, error) {
+func (s *SubscriptionService) Update(ctx context.Context, id uuid.UUID, input model.UpdateSubscriptionInput) (*model.Subscription, error) {
 	sub, err := s.repo.Update(ctx, id, input)
 	if err != nil {
 		return nil, fmt.Errorf("service.Update: %w", err)
@@ -59,7 +58,7 @@ func (s *subscriptionService) Update(ctx context.Context, id uuid.UUID, input mo
 	return sub, nil
 }
 
-func (s *subscriptionService) Delete(ctx context.Context, id uuid.UUID) error {
+func (s *SubscriptionService) Delete(ctx context.Context, id uuid.UUID) error {
 	err := s.repo.Delete(ctx, id)
 	if err != nil {
 		return fmt.Errorf("service.Delete: %w", err)
@@ -67,7 +66,7 @@ func (s *subscriptionService) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (s *subscriptionService) GetTotalCost(ctx context.Context, userID uuid.UUID, serviceName string) (*model.TotalCostResponse, error) {
+func (s *SubscriptionService) GetTotalCost(ctx context.Context, userID uuid.UUID, serviceName string) (*model.TotalCostResponse, error) {
 	result, err := s.repo.GetTotalCost(ctx, userID, serviceName)
 	if err != nil {
 		return nil, fmt.Errorf("service.GetTotalCost: %w", err)

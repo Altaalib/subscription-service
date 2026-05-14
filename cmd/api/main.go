@@ -8,6 +8,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -89,9 +90,9 @@ func main() {
 	zapLogger.Info("migrations applied")
 
 	// Слои
-	repo := repository.NewSubscriptionRepository(db)
-	svc := service.NewSubscriptionService(repo)
-	h := handler.NewSubscriptionHandler(svc)
+	repo := repository.New(db)
+	svc := service.New(repo)
+	h := handler.New(svc)
 
 	// Echo
 	e := echo.New()
@@ -115,7 +116,7 @@ func main() {
 	go func() {
 		addr := fmt.Sprintf(":%s", cfg.Server.Port)
 		zapLogger.Info("starting server", zap.String("addr", addr))
-		if err := e.Start(addr); err != nil && err != http.ErrServerClosed {
+		if err := e.Start(addr); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			zapLogger.Fatal("server error", zap.Error(err))
 		}
 	}()
